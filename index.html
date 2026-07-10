@@ -1018,6 +1018,7 @@ class Component extends DCLogic {
   setScreen(name){ this.setState({screen: name}); }
 
   selectHole(n){
+    if (n !== this.state.currentHole) this.commitDefaultScores(this.state.currentHole);
     this.setState({currentHole: n});
     const active = this.state.roster.filter(p => p.active);
     const mode = this.state.scoringMode;
@@ -1226,6 +1227,7 @@ class Component extends DCLogic {
     return active.length > 0 && active.every(p => (this.state.scores[p.id] || {})[total] != null);
   }
   attemptEndEvent(){
+    this.commitDefaultScores(this.state.currentHole);
     this.setState({showEndConfirm:true});
   }
   finalizeEndEvent(){
@@ -1252,7 +1254,23 @@ class Component extends DCLogic {
   }
   dismissEndConfirm(){ this.setState({showEndConfirm:false}); }
 
+  // Committing a hole means: any player still shown at the default (par, unedited)
+  // is actually recording that par score for real — golfers who make par shouldn't
+  // have to tap +/- to "confirm" it. Only fills gaps; never overwrites an entered score.
+  commitDefaultScores(holeNum){
+    const active = this.state.roster.filter(p => p.active);
+    const par = this.course.par[holeNum-1];
+    const scores = JSON.parse(JSON.stringify(this.state.scores));
+    let changed = false;
+    active.forEach(p => {
+      if (!scores[p.id]) scores[p.id] = {};
+      if (scores[p.id][holeNum] == null){ scores[p.id][holeNum] = par; changed = true; }
+    });
+    if (changed) this.setState({scores}, () => { if (par === 3) this.refreshGreenieSweep(); });
+  }
+
   saveAdvance(){
+    this.commitDefaultScores(this.state.currentHole);
     const next = Math.min(18, this.state.currentHole + 1);
     this.selectHole(next);
   }
