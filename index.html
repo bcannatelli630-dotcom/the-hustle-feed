@@ -36,6 +36,40 @@ body{margin:0;background:#e5e2da;-webkit-font-smoothing:antialiased}
           <div style="font:700 11px Archivo,sans-serif;color:#ff8a7a;">Incorrect password</div>
         </sc-if>
         <div style="background:#d4a017;color:#0f2a4a;padding:12px 30px;border-radius:8px;font:800 12px Archivo,sans-serif;cursor:pointer;" onClick="{{ onPwSubmit }}">UNLOCK</div>
+        <div style="font:700 10px Archivo,sans-serif;color:#a9bdd4;letter-spacing:.3px;cursor:pointer;text-decoration:underline;margin-top:4px;" onClick="{{ onToggleForgotPassword }}">Forgot password?</div>
+
+        <sc-if value="{{ forgotPasswordOpen }}" hint-placeholder-val="{{ false }}">
+          <div style="width:260px;background:#fff;border-radius:12px;padding:16px;margin-top:6px;display:flex;flex-direction:column;gap:10px;text-align:left;">
+            <sc-if value="{{ !masterUnlocked }}" hint-placeholder-val="{{ true }}">
+              <div style="font:700 11px Archivo,sans-serif;color:#0f2a4a;">Enter master password to reset</div>
+              <input type="password" value="{{ masterPwInput }}" onChange="{{ onMasterPwChange }}" placeholder="Master password" style="border:1.5px solid #e9e5dc;border-radius:6px;padding:9px 10px;font:700 12px Archivo,sans-serif;outline:none;"/>
+              <sc-if value="{{ masterPwError }}" hint-placeholder-val="{{ false }}">
+                <div style="font:700 10px Archivo,sans-serif;color:#c8102e;">Incorrect master password</div>
+              </sc-if>
+              <div style="background:#0f2a4a;color:#fff;text-align:center;padding:9px;border-radius:6px;font:800 11px Archivo,sans-serif;cursor:pointer;" onClick="{{ onSubmitMasterPassword }}">SUBMIT</div>
+            </sc-if>
+            <sc-if value="{{ masterUnlocked }}" hint-placeholder-val="{{ false }}">
+              <div style="font:700 11px Archivo,sans-serif;color:#0f2a4a;">Set a new group password</div>
+              <input type="text" value="{{ newSitePasswordInput }}" onChange="{{ onNewSitePasswordChange }}" placeholder="New password" style="border:1.5px solid #e9e5dc;border-radius:6px;padding:9px 10px;font:700 12px Archivo,sans-serif;outline:none;"/>
+              <div style="background:#0f2a4a;color:#fff;text-align:center;padding:9px;border-radius:6px;font:800 11px Archivo,sans-serif;cursor:pointer;" onClick="{{ onSaveNewSitePassword }}">SAVE NEW PASSWORD</div>
+              <sc-if value="{{ newSitePasswordSaved }}" hint-placeholder-val="{{ false }}">
+                <div style="font:700 10px Archivo,sans-serif;color:#1e7a3d;">Saved — use it next time you unlock.</div>
+              </sc-if>
+              <div style="border-top:1px solid #e9e5dc;margin-top:4px;padding-top:10px;">
+                <sc-if value="{{ !clearDataConfirmOpen }}" hint-placeholder-val="{{ true }}">
+                  <div style="background:#fff;color:#c8102e;text-align:center;padding:9px;border-radius:6px;font:800 11px Archivo,sans-serif;cursor:pointer;border:1.5px solid #c8102e;" onClick="{{ onOpenClearDataConfirm }}">CLEAR ALL SAVED DATA</div>
+                </sc-if>
+                <sc-if value="{{ clearDataConfirmOpen }}" hint-placeholder-val="{{ false }}">
+                  <div style="font:700 10px Archivo,sans-serif;color:#c8102e;margin-bottom:6px;">This wipes the roster, scores, and settings on this device for good. Sure?</div>
+                  <div style="display:flex;gap:8px;">
+                    <div style="flex:1;text-align:center;padding:8px;border-radius:6px;font:800 10px Archivo,sans-serif;cursor:pointer;background:#f3f1ea;color:#5a6672;" onClick="{{ onDismissClearDataConfirm }}">CANCEL</div>
+                    <div style="flex:1;text-align:center;padding:8px;border-radius:6px;font:800 10px Archivo,sans-serif;cursor:pointer;background:#c8102e;color:#fff;" onClick="{{ onClearAllSavedData }}">YES, CLEAR IT</div>
+                  </div>
+                </sc-if>
+              </div>
+            </sc-if>
+          </div>
+        </sc-if>
       </div>
     </sc-if>
 
@@ -463,6 +497,16 @@ body{margin:0;background:#e5e2da;-webkit-font-smoothing:antialiased}
         <sc-if value="{{ true }}" hint-placeholder-val="{{ true }}">
           <div style="flex:1;padding:14px 16px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;">
 
+            <div style="font:800 11px Archivo,sans-serif;color:#98928a;letter-spacing:.6px;margin-bottom:2px;">SESSION CODE</div>
+            <div style="background:#fff;border-radius:12px;padding:14px;box-shadow:0 1px 2px rgba(15,42,74,.06);margin-bottom:6px;">
+              <div style="font:600 10px Archivo,sans-serif;color:#98928a;margin-bottom:8px;line-height:1.4;">Only phones on the same code see this round live. Share yours with your group — or enter someone else's to jump into their round.</div>
+              <div style="font:800 13px monospace;color:#0f2a4a;background:#f3f1ea;border-radius:6px;padding:9px 10px;margin-bottom:8px;">{{ groupKey }}</div>
+              <div style="display:flex;gap:8px;">
+                <input value="{{ groupKeyInput }}" onChange="{{ onGroupKeyInputChange }}" placeholder="Enter a different code to join" style="flex:1;border:1.5px solid #e9e5dc;border-radius:6px;padding:9px 10px;font:700 12px monospace;outline:none;background:#fbfaf7;"/>
+                <div style="background:#0f2a4a;color:#fff;padding:9px 14px;border-radius:6px;font:800 11px Archivo,sans-serif;cursor:pointer;flex:none;" onClick="{{ onJoinGroupKey }}">JOIN</div>
+              </div>
+            </div>
+
             <div style="font:800 11px Archivo,sans-serif;color:#98928a;letter-spacing:.6px;margin-bottom:2px;">ROUND TYPE</div>
             <div style="background:#fff;border-radius:12px;padding:14px;box-shadow:0 1px 2px rgba(15,42,74,.06);margin-bottom:6px;">
               <div style="display:flex;gap:6px;">
@@ -841,27 +885,58 @@ const HISTORY_DEFAULT = [];
 //   USE_LIVE_SYNC = true
 //   SYNC_ENDPOINT = 'https://<your-feed-project>.vercel.app/api/state'
 //   COURSE_ENDPOINT = 'https://<your-feed-project>.vercel.app/api/course'
-//   GROUP_KEY = 'usual-suspects'   // any slug your group agrees on
+//   GROUP_KEY: no longer a fixed constant — each device gets its own random session
+//   code automatically (Settings → Session Code); enter a shared code to sync a group.
 //   SYNC_WRITE_KEY = 'hustle-2026' // must match HUSTLE_WRITE_KEY on the feed
 // loadState()/pushState() below already speak that endpoint's exact contract.
 // Simple shared password so casual visitors to thehustleapp.net can't see or touch
 // live scores/settings. Not bulletproof (view-source reveals it) — good enough to
-// keep out randoms; change it any time and re-deploy.
-const SITE_PASSWORD = 'OhNo2026';
+// keep out randoms. The password itself is changeable at runtime (Forgot Password?
+// on the lock screen) via MASTER_PASSWORD below — no redeploy needed for a reset.
+const SITE_PASSWORD_DEFAULT = 'OhNo2026';
+const MASTER_PASSWORD = 'HustleMaster2026'; // admin-only: resets/changes the group password + wipes data
 const UNLOCK_STORAGE_KEY = 'hustle_unlocked';
+const SITE_PASSWORD_STORAGE_KEY = 'hustle_site_password';
+const LOCAL_STATE_KEY = 'hustle_local_state';
+const GROUP_KEY_STORAGE = 'hustle_group_key';
 
 const USE_LIVE_SYNC = true;
 const SYNC_ENDPOINT = 'https://the-hustle-feed.vercel.app/api/state';
 const COURSE_ENDPOINT = 'https://the-hustle-feed.vercel.app/api/course';
-const GROUP_KEY = 'default';
 const SYNC_WRITE_KEY = 'OhNo2026';
 const SYNC_POLL_MS = 4000;
+
+// Every device defaults to its OWN private session code, so friends who grab the
+// same password but aren't in your foursome never see or touch your live round.
+// Share your code (Settings) with people you actually want synced with you.
+function getOrCreateGroupKey(){
+  if (typeof localStorage === 'undefined') return 'default';
+  let k = localStorage.getItem(GROUP_KEY_STORAGE);
+  if (!k){
+    k = 'game-' + Math.random().toString(36).slice(2, 8);
+    localStorage.setItem(GROUP_KEY_STORAGE, k);
+  }
+  return k;
+}
+function getSitePassword(){
+  if (typeof localStorage === 'undefined') return SITE_PASSWORD_DEFAULT;
+  return localStorage.getItem(SITE_PASSWORD_STORAGE_KEY) || SITE_PASSWORD_DEFAULT;
+}
 
 class Component extends DCLogic {
   state = {
     unlocked: (typeof localStorage !== 'undefined' && localStorage.getItem(UNLOCK_STORAGE_KEY) === '1'),
     pwInput: '',
     pwError: false,
+    groupKey: getOrCreateGroupKey(),
+    groupKeyInput: '',
+    forgotPasswordOpen: false,
+    masterUnlocked: false,
+    masterPwInput: '',
+    masterPwError: false,
+    newSitePasswordInput: '',
+    newSitePasswordSaved: false,
+    clearDataConfirmOpen: false,
     screen: 'board',
     scoringMode: 'low',
     currentHole: 15,
@@ -916,12 +991,55 @@ class Component extends DCLogic {
 
   onPwChange(e){ this.setState({pwInput: e.target.value, pwError:false}); }
   onPwSubmit(){
-    if (this.state.pwInput === SITE_PASSWORD){
+    if (this.state.pwInput === getSitePassword()){
       if (typeof localStorage !== 'undefined') localStorage.setItem(UNLOCK_STORAGE_KEY, '1');
       this.setState({unlocked:true, pwInput:'', pwError:false});
     } else {
       this.setState({pwError:true});
     }
+  }
+  toggleForgotPassword(){
+    this.setState({forgotPasswordOpen: !this.state.forgotPasswordOpen, masterUnlocked:false, masterPwInput:'', masterPwError:false, newSitePasswordInput:'', newSitePasswordSaved:false, clearDataConfirmOpen:false});
+  }
+  onMasterPwChange(e){ this.setState({masterPwInput: e.target.value, masterPwError:false}); }
+  submitMasterPassword(){
+    if (this.state.masterPwInput === MASTER_PASSWORD){
+      this.setState({masterUnlocked:true, masterPwError:false, masterPwInput:''});
+    } else {
+      this.setState({masterPwError:true});
+    }
+  }
+  onNewSitePasswordChange(e){ this.setState({newSitePasswordInput: e.target.value, newSitePasswordSaved:false}); }
+  saveNewSitePassword(){
+    const val = this.state.newSitePasswordInput.trim();
+    if (!val) return;
+    if (typeof localStorage !== 'undefined') localStorage.setItem(SITE_PASSWORD_STORAGE_KEY, val);
+    this.setState({newSitePasswordSaved:true, newSitePasswordInput:''});
+  }
+  onGroupKeyInputChange(e){ this.setState({groupKeyInput: e.target.value}); }
+  joinGroupKey(){
+    const val = this.state.groupKeyInput.trim();
+    if (!val || val === this.state.groupKey) { this.setState({groupKeyInput:''}); return; }
+    if (typeof localStorage !== 'undefined') localStorage.setItem(GROUP_KEY_STORAGE, val);
+    this.setState({groupKey: val, groupKeyInput:''}, () => this.loadState());
+  }
+  openClearDataConfirm(){ this.setState({clearDataConfirmOpen:true}); }
+  dismissClearDataConfirm(){ this.setState({clearDataConfirmOpen:false}); }
+  clearAllSavedData(){
+    if (typeof localStorage !== 'undefined'){
+      localStorage.removeItem(LOCAL_STATE_KEY);
+      localStorage.removeItem('hustle_known_players');
+    }
+    const fresh = {
+      roster: [], scores: {}, greenieWinners: {}, greenieResolved: {}, wolfPicks: {},
+      sandyFlags: {}, polyFlags: {}, barkyFlags: {}, chippyFlags: {}, vegasTeams: {},
+      presses: [], history: JSON.parse(JSON.stringify(HISTORY_DEFAULT)),
+      games: JSON.parse(JSON.stringify(GAMES_DEFAULT)), junk: JSON.parse(JSON.stringify(JUNK_DEFAULT)),
+      courseName: 'No Course Selected', liveCourses: {}, eventName: '', showHero: true,
+      currentHole: 1, screen: 'board', rrcHolder: null, sweepCandidate: null, sweepCount: 0, sweepDead: false
+    };
+    this.setState(fresh, () => this.pushStateDebounced());
+    this.setState({clearDataConfirmOpen:false, forgotPasswordOpen:false});
   }
 
   // ── Live sync stubs — see USE_LIVE_SYNC block above ──
@@ -930,9 +1048,31 @@ class Component extends DCLogic {
       const saved = JSON.parse(localStorage.getItem('hustle_known_players') || '[]');
       if (Array.isArray(saved)) this.setState({knownPlayers: saved});
     } catch(e){}
+    // Always hydrate instantly from this device's last-known local snapshot first —
+    // this alone means a closed tab / crashed browser never loses a round, even if
+    // the shared feed is offline or not yet deployed.
+    try {
+      const localSaved = JSON.parse(localStorage.getItem(LOCAL_STATE_KEY) || 'null');
+      if (localSaved && typeof localSaved === 'object') this.setState(localSaved);
+    } catch(e){}
     if (!USE_LIVE_SYNC) return;
     this.loadState();
     this._syncTimer = setInterval(() => this.loadState(), SYNC_POLL_MS);
+  }
+  componentDidUpdate(){
+    // Debounced local + remote autosave on every state change. Local write is
+    // synchronous-cheap and unconditional (the safety net); remote push is
+    // best-effort and only fires if the shared feed is configured.
+    if (this._localSaveTimer) clearTimeout(this._localSaveTimer);
+    this._localSaveTimer = setTimeout(() => {
+      try { localStorage.setItem(LOCAL_STATE_KEY, JSON.stringify(this.state)); } catch(e){}
+    }, 300);
+    this.pushStateDebounced();
+  }
+  pushStateDebounced(){
+    if (!USE_LIVE_SYNC || !SYNC_ENDPOINT) return;
+    if (this._pushTimer) clearTimeout(this._pushTimer);
+    this._pushTimer = setTimeout(() => this.pushState(), 600);
   }
   componentWillUnmount(){
     if (this._syncTimer) clearInterval(this._syncTimer);
@@ -940,7 +1080,7 @@ class Component extends DCLogic {
   async loadState(){
     if (!USE_LIVE_SYNC || !SYNC_ENDPOINT) return;
     try {
-      const res = await fetch(`${SYNC_ENDPOINT}?group=${encodeURIComponent(GROUP_KEY)}`);
+      const res = await fetch(`${SYNC_ENDPOINT}?group=${encodeURIComponent(this.state.groupKey)}`);
       const json = await res.json();
       if (json && !json.empty && json.data) this.setState(json.data);
     } catch (e) { /* stay on last-known state; retried on next poll */ }
@@ -953,6 +1093,7 @@ class Component extends DCLogic {
         headers: {'Content-Type':'application/json'},
         body: JSON.stringify({
           key: SYNC_WRITE_KEY,
+          group: this.state.groupKey,
           payload: {t: Date.now(), data: this.state}
         })
       });
@@ -2046,6 +2187,17 @@ class Component extends DCLogic {
     return {
       unlocked: s.unlocked, pwInput: s.pwInput, pwError: s.pwError,
       onPwChange: (e)=>this.onPwChange(e), onPwSubmit: () => this.onPwSubmit(),
+      forgotPasswordOpen: s.forgotPasswordOpen, onToggleForgotPassword: () => this.toggleForgotPassword(),
+      masterUnlocked: s.masterUnlocked, masterPwInput: s.masterPwInput, masterPwError: s.masterPwError,
+      onMasterPwChange: (e)=>this.onMasterPwChange(e), onSubmitMasterPassword: () => this.submitMasterPassword(),
+      newSitePasswordInput: s.newSitePasswordInput, newSitePasswordSaved: s.newSitePasswordSaved,
+      onNewSitePasswordChange: (e)=>this.onNewSitePasswordChange(e), onSaveNewSitePassword: () => this.saveNewSitePassword(),
+      clearDataConfirmOpen: s.clearDataConfirmOpen,
+      onOpenClearDataConfirm: () => this.openClearDataConfirm(),
+      onDismissClearDataConfirm: () => this.dismissClearDataConfirm(),
+      onClearAllSavedData: () => this.clearAllSavedData(),
+      groupKey: s.groupKey, groupKeyInput: s.groupKeyInput,
+      onGroupKeyInputChange: (e)=>this.onGroupKeyInputChange(e), onJoinGroupKey: () => this.joinGroupKey(),
       isBoard: s.screen==='board', isCard: s.screen==='card', isGames: s.screen==='games',
       isHistory: s.screen==='history', isSettings: s.screen==='settings', isSettle: s.screen==='settle',
       goSettle: () => this.goSettle(),
