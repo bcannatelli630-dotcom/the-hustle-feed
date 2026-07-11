@@ -1021,7 +1021,7 @@ class Component extends DCLogic {
     const val = this.state.groupKeyInput.trim();
     if (!val || val === this.state.groupKey) { this.setState({groupKeyInput:''}); return; }
     if (typeof localStorage !== 'undefined') localStorage.setItem(GROUP_KEY_STORAGE, val);
-    this.setState({groupKey: val, groupKeyInput:''}, () => this.loadState());
+    this.setState({groupKey: val, groupKeyInput:''}, () => this.loadState(true));
   }
   openClearDataConfirm(){ this.setState({clearDataConfirmOpen:true}); }
   dismissClearDataConfirm(){ this.setState({clearDataConfirmOpen:false}); }
@@ -1067,6 +1067,10 @@ class Component extends DCLogic {
     this._localSaveTimer = setTimeout(() => {
       try { localStorage.setItem(LOCAL_STATE_KEY, JSON.stringify(this.state)); } catch(e){}
     }, 300);
+    // Skip marking "local change" bookkeeping when this update IS a remote poll
+    // landing (avoids a feedback loop); otherwise remember when we last changed
+    // something locally so the poll below can hold off overwriting it.
+    if (!this._applyingRemote) this._lastLocalChangeAt = Date.now();
     this.pushStateDebounced();
   }
   pushStateDebounced(){
@@ -1077,12 +1081,20 @@ class Component extends DCLogic {
   componentWillUnmount(){
     if (this._syncTimer) clearInterval(this._syncTimer);
   }
-  async loadState(){
+  async loadState(force){
     if (!USE_LIVE_SYNC || !SYNC_ENDPOINT) return;
+    // Give any very-recent local change (e.g. a tab switch or a score tap) a couple
+    // seconds to actually land on the server before trusting an incoming poll —
+    // otherwise a poll racing ahead of our own pending push stomps it right back.
+    // (force=true bypasses this — used when deliberately switching session codes.)
+    if (!force && this._lastLocalChangeAt && Date.now() - this._lastLocalChangeAt < 2500) return;
     try {
       const res = await fetch(`${SYNC_ENDPOINT}?group=${encodeURIComponent(this.state.groupKey)}`);
       const json = await res.json();
-      if (json && !json.empty && json.data) this.setState(json.data);
+      if (json && !json.empty && json.data) {
+        this._applyingRemote = true;
+        this.setState(json.data, () => { this._applyingRemote = false; });
+      }
     } catch (e) { /* stay on last-known state; retried on next poll */ }
   }
   async pushState(){
