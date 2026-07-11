@@ -906,6 +906,24 @@ const COURSE_ENDPOINT = 'https://the-hustle-feed.vercel.app/api/course';
 const SYNC_WRITE_KEY = 'OhNo2026';
 const SYNC_POLL_MS = 4000;
 
+// Only these fields are the actual shared round — roster, scores, bets, junk, course,
+// press log. Everything else (which tab you're on, which hole you're viewing, search
+// boxes, password/session UI) is per-device and must never be synced or overwritten
+// by another phone's poll — that was causing screens to "snap back" mid-interaction.
+const SYNC_KEYS = [
+  'scoringMode', 'scores', 'roster', 'games', 'junk', 'history',
+  'sweepCandidate', 'sweepCount', 'sweepDead', 'rrcHolder',
+  'greenieWinners', 'greenieResolved', 'wolfPicks',
+  'sandyFlags', 'polyFlags', 'barkyFlags', 'chippyFlags', 'vegasTeams',
+  'customJunk', 'presses', 'courseName', 'liveCourses',
+  'roundType', 'tournamentDays', 'eventName', 'showHero'
+];
+function pickSyncFields(obj){
+  const out = {};
+  SYNC_KEYS.forEach(k => { if (obj[k] !== undefined) out[k] = obj[k]; });
+  return out;
+}
+
 // Every device defaults to its OWN private session code, so friends who grab the
 // same password but aren't in your foursome never see or touch your live round.
 // Share your code (Settings) with people you actually want synced with you.
@@ -1093,7 +1111,7 @@ class Component extends DCLogic {
       const json = await res.json();
       if (json && !json.empty && json.data) {
         this._applyingRemote = true;
-        this.setState(json.data, () => { this._applyingRemote = false; });
+        this.setState(pickSyncFields(json.data), () => { this._applyingRemote = false; });
       }
     } catch (e) { /* stay on last-known state; retried on next poll */ }
   }
@@ -1106,7 +1124,7 @@ class Component extends DCLogic {
         body: JSON.stringify({
           key: SYNC_WRITE_KEY,
           group: this.state.groupKey,
-          payload: {t: Date.now(), data: this.state}
+          payload: {t: Date.now(), data: pickSyncFields(this.state)}
         })
       });
     } catch (e) { /* best-effort; next local change retries */ }
