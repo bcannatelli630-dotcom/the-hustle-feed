@@ -499,6 +499,12 @@ body{margin:0;background:#e5e2da;-webkit-font-smoothing:antialiased}
           <div style="flex:1;padding:14px 16px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;">
 
             <div style="font:800 11px Archivo,sans-serif;color:#98928a;letter-spacing:.6px;margin-bottom:2px;">SESSION CODE</div>
+            <sc-if value="{{ syncError }}" hint-placeholder-val="{{ false }}">
+              <div style="background:#fdecec;border:1px solid #f3c6c6;border-radius:10px;padding:10px 12px;margin-bottom:6px;">
+                <div style="font:800 10px Archivo,sans-serif;color:#c8102e;letter-spacing:.3px;">⚠ SYNC FAILING</div>
+                <div style="font:600 10px Archivo,sans-serif;color:#8a3a3a;margin-top:3px;line-height:1.4;">Changes on this phone aren't reaching the shared feed. Other devices may not see them. Check the feed's Supabase/env setup.</div>
+              </div>
+            </sc-if>
             <div style="background:#fff;border-radius:12px;padding:14px;box-shadow:0 1px 2px rgba(15,42,74,.06);margin-bottom:6px;">
               <div style="font:600 10px Archivo,sans-serif;color:#98928a;margin-bottom:8px;line-height:1.4;">Only phones on the same code see this round live. Share yours with your group — or enter someone else's to jump into their round.</div>
               <div style="font:800 13px monospace;color:#0f2a4a;background:#f3f1ea;border-radius:6px;padding:9px 10px;margin-bottom:8px;">{{ groupKey }}</div>
@@ -949,6 +955,7 @@ class Component extends DCLogic {
     pwError: false,
     groupKey: getOrCreateGroupKey(),
     groupKeyInput: '',
+    syncError: false,
     forgotPasswordOpen: false,
     masterUnlocked: false,
     masterPwInput: '',
@@ -1111,24 +1118,47 @@ class Component extends DCLogic {
       const res = await fetch(`${SYNC_ENDPOINT}?group=${encodeURIComponent(this.state.groupKey)}`);
       const json = await res.json();
       if (json && !json.empty && json.data) {
-        this._applyingRemote = true;
-        this.setState(pickSyncFields(json.data), () => { this._applyingRemote = false; });
+        // Guard against a stale poll clobbering a not-yet-confirmed local edit:
+        // only apply if the remote snapshot is at least as new as our last local
+        // change. If our last push is failing (bad write key, Supabase down,
+        // etc.) this correctly keeps refusing stale remote data instead of
+        // reverting your edit — and flips on a visible sync warning below.
+        const remoteT = json.t || 0;
+        if (!this._lastLocalChangeAt || remoteT >= this._lastLocalChangeAt){
+          this._applyingRemote = true;
+          this.setState(Object.assign(pickSyncFields(json.data), {syncError:false}), () => { this._applyingRemote = false; });
+        }
       }
     } catch (e) { /* stay on last-known state; retried on next poll */ }
   }
   async pushState(){
     if (!USE_LIVE_SYNC || !SYNC_ENDPOINT) return;
+    const attemptedAt = Date.now();
     try {
-      await fetch(SYNC_ENDPOINT, {
+      const res = await fetch(SYNC_ENDPOINT, {
         method: 'POST',
         headers: {'Content-Type':'application/json'},
         body: JSON.stringify({
           key: SYNC_WRITE_KEY,
           group: this.state.groupKey,
-          payload: {t: Date.now(), data: pickSyncFields(this.state)}
+          payload: {t: attemptedAt, data: pickSyncFields(this.state)}
         })
       });
-    } catch (e) { /* best-effort; next local change retries */ }
+      if (res.ok) {
+        this._lastConfirmedPushAt = attemptedAt;
+        this._pushFailCount = 0;
+        if (this.state.syncError) this.setState({syncError:false});
+      } else {
+        this._onPushFailed();
+      }
+    } catch (e) { this._onPushFailed(); }
+  }
+  _onPushFailed(){
+    // Surface it after a couple of consecutive failures (not on one network blip)
+    // so it's visible in Settings that changes on THIS device aren't reaching
+    // other phones — instead of it looking like random data loss.
+    this._pushFailCount = (this._pushFailCount || 0) + 1;
+    if (this._pushFailCount >= 2 && !this.state.syncError) this.setState({syncError:true});
   }
   async searchCoursesLive(query){
     if (!USE_LIVE_SYNC || !COURSE_ENDPOINT) return null;
@@ -2229,6 +2259,7 @@ class Component extends DCLogic {
       onClearAllSavedData: () => this.clearAllSavedData(),
       groupKey: s.groupKey, groupKeyInput: s.groupKeyInput,
       onGroupKeyInputChange: (e)=>this.onGroupKeyInputChange(e), onJoinGroupKey: () => this.joinGroupKey(),
+      syncError: s.syncError,
       isBoard: s.screen==='board', isCard: s.screen==='card', isGames: s.screen==='games',
       isHistory: s.screen==='history', isSettings: s.screen==='settings', isSettle: s.screen==='settle',
       goSettle: () => this.goSettle(),
