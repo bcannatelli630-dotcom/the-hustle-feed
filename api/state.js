@@ -28,7 +28,11 @@ export default async function handler(req, res) {
     return;
   }
 
-  const groupKey = (req.query && req.query.group) || 'default';
+  // group can arrive either as a query param (GET, and POST too if the client
+  // includes it) or in the POST body — a write must resolve to the SAME group a
+  // read will look up, or two devices "sharing a code" silently write/read
+  // different rows and never see each other's data.
+  let groupKey = (req.query && req.query.group) || 'default';
 
   // ----- READ -----
   if (req.method === 'GET') {
@@ -53,6 +57,7 @@ export default async function handler(req, res) {
     let body = req.body;
     if (typeof body === 'string') { try { body = JSON.parse(body); } catch (e) { body = {}; } }
     if (!body || body.key !== WRITE_KEY) { res.status(403).json({ error: 'bad_key' }); return; }
+    if (body.group) groupKey = body.group; // this is the actual bug fix: body.group was never read before, so every write landed in "default" no matter what session code was shown
     const payload = body.payload;
     if (!payload || !payload.data) { res.status(400).json({ error: 'bad_payload' }); return; }
     try {
