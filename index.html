@@ -22,11 +22,15 @@
 @keyframes mb-slide-down{from{transform:translateY(-100%)}to{transform:translateY(0)}}
 @keyframes mb-pop{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:scale(1)}}
 body{margin:0;background:#e5e2da;-webkit-font-smoothing:antialiased}
+@media (max-width: 480px) {
+  .hustle-outer{padding:0 !important;}
+  .hustle-frame{width:100% !important;min-height:100vh !important;min-height:100dvh !important;border-radius:0 !important;box-shadow:none !important;border:none !important;}
+}
 </style>
 </helmet>
 
-<div style="min-height:100vh;background:#e5e2da;display:flex;justify-content:center;padding:28px 0;font-family:Archivo,system-ui,sans-serif;">
-  <div style="width:390px;min-height:844px;background:#fbfaf7;border-radius:30px;overflow:hidden;box-shadow:0 24px 60px rgba(15,42,74,.28);position:relative;display:flex;flex-direction:column;border:1px solid rgba(15,42,74,.08);">
+<div style="min-height:100vh;background:#e5e2da;display:flex;justify-content:center;padding:28px 0;font-family:Archivo,system-ui,sans-serif;" class="hustle-outer">
+  <div style="width:390px;min-height:844px;background:#fbfaf7;border-radius:30px;overflow:hidden;box-shadow:0 24px 60px rgba(15,42,74,.28);position:relative;display:flex;flex-direction:column;border:1px solid rgba(15,42,74,.08);" class="hustle-frame">
 
     <sc-if value="{{ !unlocked }}" hint-placeholder-val="{{ false }}">
       <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:40px;background:#0f2a4a;text-align:center;">
@@ -84,14 +88,17 @@ body{margin:0;background:#e5e2da;-webkit-font-smoothing:antialiased}
     <!-- ============ BOARD ============ -->
     <sc-if value="{{ isBoard }}" hint-placeholder-val="{{ true }}">
       <div style="flex:1;display:flex;flex-direction:column;min-height:0;">
-        <div style="flex:none;padding:16px 18px 14px;background:#0f2a4a;">
+        <div style="flex:none;padding:14px 18px 14px;background:#0f2a4a;position:relative;">
+          <div style="position:absolute;top:12px;right:14px;cursor:pointer;padding:2px;" onClick="{{ onLogout }}" title="Log out">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a9bdd4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          </div>
           <div style="display:flex;align-items:center;justify-content:space-between;">
             <div style="font:900 20px 'Archivo Black',sans-serif;letter-spacing:.4px;white-space:nowrap;flex-shrink:0;"><span style="color:#fff;">THE </span><span style="color:#ffa62f;">HUSTLE</span></div>
-            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:10px;flex-shrink:0;">
-              <div style="background:#c8102e;color:#fff;font:800 10px Archivo,sans-serif;padding:5px 10px;border-radius:20px;letter-spacing:.5px;cursor:pointer;white-space:nowrap;" onClick="{{ goSettle }}">SETTLE UP</div>
-              <div style="display:flex;align-items:center;gap:5px;background:#d4a017;color:#0f2a4a;font:800 10px Archivo,sans-serif;padding:4px 9px;border-radius:2px;letter-spacing:.6px;">
-                <span style="width:6px;height:6px;border-radius:50%;background:#0f2a4a;"></span>LIVE
-              </div>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:flex-end;gap:8px;margin-top:8px;">
+            <div style="background:#c8102e;color:#fff;font:800 10px Archivo,sans-serif;padding:5px 10px;border-radius:20px;letter-spacing:.5px;cursor:pointer;white-space:nowrap;" onClick="{{ goSettle }}">SETTLE UP</div>
+            <div style="display:flex;align-items:center;gap:5px;background:#d4a017;color:#0f2a4a;font:800 10px Archivo,sans-serif;padding:4px 9px;border-radius:2px;letter-spacing:.6px;">
+              <span style="width:6px;height:6px;border-radius:50%;background:#0f2a4a;"></span>LIVE
             </div>
           </div>
           <div style="margin-top:7px;font:700 11px Archivo,sans-serif;color:#a9bdd4;letter-spacing:.5px;">{{ courseLabel }} · {{ roundTypeLabel }} · THRU {{ overallThru }}</div>
@@ -151,10 +158,15 @@ body{margin:0;background:#e5e2da;-webkit-font-smoothing:antialiased}
     <!-- ============ CARD ============ -->
     <sc-if value="{{ isCard }}" hint-placeholder-val="{{ false }}">
       <div style="flex:1;display:flex;flex-direction:column;min-height:0;">
-        <div style="flex:none;padding:16px 18px 14px;background:#0f2a4a;">
+        <div style="flex:none;padding:14px 18px 14px;background:#0f2a4a;position:relative;">
+          <div style="position:absolute;top:12px;right:14px;cursor:pointer;padding:2px;" onClick="{{ onLogout }}" title="Log out">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a9bdd4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          </div>
           <div style="display:flex;align-items:center;justify-content:space-between;">
             <div style="font:900 20px 'Archivo Black',sans-serif;letter-spacing:.4px;white-space:nowrap;flex-shrink:0;"><span style="color:#fff;">THE </span><span style="color:#ffa62f;">HUSTLE</span></div>
-            <div style="background:#c8102e;color:#fff;font:800 10px Archivo,sans-serif;padding:5px 10px;border-radius:20px;letter-spacing:.5px;cursor:pointer;white-space:nowrap;flex-shrink:0;" onClick="{{ goSettle }}">SETTLE UP</div>
+          </div>
+          <div style="display:flex;justify-content:flex-end;margin-top:8px;">
+            <div style="background:#c8102e;color:#fff;font:800 10px Archivo,sans-serif;padding:5px 10px;border-radius:20px;letter-spacing:.5px;cursor:pointer;white-space:nowrap;" onClick="{{ goSettle }}">SETTLE UP</div>
           </div>
           <div style="margin-top:7px;font:700 11px Archivo,sans-serif;color:#a9bdd4;letter-spacing:.5px;">ENTER SCORES · HOLE {{ currentHoleObj.n }}</div>
         </div>
@@ -340,7 +352,10 @@ body{margin:0;background:#e5e2da;-webkit-font-smoothing:antialiased}
     <!-- ============ GAMES ============ -->
     <sc-if value="{{ isGames }}" hint-placeholder-val="{{ false }}">
       <div style="flex:1;display:flex;flex-direction:column;min-height:0;">
-        <div style="flex:none;padding:16px 18px 14px;background:#0f2a4a;">
+        <div style="flex:none;padding:16px 18px 14px;background:#0f2a4a;position:relative;">
+          <div style="position:absolute;top:14px;right:14px;cursor:pointer;padding:2px;" onClick="{{ onLogout }}" title="Log out">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a9bdd4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          </div>
           <div style="display:flex;align-items:center;justify-content:space-between;">
             <div style="display:flex;align-items:center;gap:10px;">
               <div style="color:#fff;font:700 16px sans-serif;cursor:pointer;" onClick="{{ goBoard }}">←</div>
@@ -451,7 +466,10 @@ body{margin:0;background:#e5e2da;-webkit-font-smoothing:antialiased}
     <!-- ============ HISTORY ============ -->
     <sc-if value="{{ isHistory }}" hint-placeholder-val="{{ false }}">
       <div style="flex:1;display:flex;flex-direction:column;min-height:0;">
-        <div style="flex:none;padding:16px 18px 14px;background:#0f2a4a;">
+        <div style="flex:none;padding:16px 18px 14px;background:#0f2a4a;position:relative;">
+          <div style="position:absolute;top:14px;right:14px;cursor:pointer;padding:2px;" onClick="{{ onLogout }}" title="Log out">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a9bdd4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          </div>
           <div style="display:flex;align-items:center;justify-content:space-between;">
             <div style="display:flex;align-items:center;gap:10px;">
               <div style="color:#fff;font:700 16px sans-serif;cursor:pointer;" onClick="{{ goBoard }}">←</div>
@@ -491,7 +509,10 @@ body{margin:0;background:#e5e2da;-webkit-font-smoothing:antialiased}
       <div style="flex:1;display:flex;flex-direction:column;min-height:0;">
         <div style="flex:none;padding:16px 18px 14px;background:#0f2a4a;display:flex;align-items:center;gap:10px;">
           <div style="color:#fff;font:700 16px sans-serif;cursor:pointer;" onClick="{{ goBoard }}">←</div>
-          <div style="font:900 16px 'Archivo Black',sans-serif;color:#fff;letter-spacing:.4px;">SETTINGS</div>
+          <div style="font:900 16px 'Archivo Black',sans-serif;color:#fff;letter-spacing:.4px;flex:1;">SETTINGS</div>
+          <div style="cursor:pointer;padding:2px;" onClick="{{ onLogout }}" title="Log out">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a9bdd4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          </div>
         </div>
 
         <!-- roster management -->
@@ -736,6 +757,32 @@ body{margin:0;background:#e5e2da;-webkit-font-smoothing:antialiased}
             </sc-if>
 
             <div style="background:#c8102e;color:#fff;text-align:center;padding:14px;border-radius:10px;font:800 13px Archivo,sans-serif;letter-spacing:.5px;cursor:pointer;margin-top:8px;" onClick="{{ onStartEvent }}">START EVENT</div>
+
+            <sc-if value="{{ !clearRoundConfirmOpen }}" hint-placeholder-val="{{ true }}">
+              <div style="text-align:center;padding:11px;border-radius:10px;font:800 11px Archivo,sans-serif;color:#c8102e;border:1.5px solid #c8102e;cursor:pointer;margin-top:4px;" onClick="{{ onOpenClearRoundConfirm }}">CLEAR ROUND</div>
+            </sc-if>
+            <sc-if value="{{ clearRoundConfirmOpen }}" hint-placeholder-val="{{ false }}">
+              <div style="background:#fff;border-radius:10px;padding:14px;box-shadow:0 1px 2px rgba(15,42,74,.06);margin-top:4px;">
+                <div style="font:700 11px Archivo,sans-serif;color:#c8102e;line-height:1.5;margin-bottom:10px;">This clears all scores and every bet on the table (games, junk, presses, RRC, greenie sweep) for the current round. Roster, course, and settings stay put. Sure?</div>
+                <div style="display:flex;gap:8px;">
+                  <div style="flex:1;text-align:center;padding:9px;border-radius:6px;font:800 11px Archivo,sans-serif;cursor:pointer;background:#f3f1ea;color:#5a6672;" onClick="{{ onDismissClearRoundConfirm }}">CANCEL</div>
+                  <div style="flex:1;text-align:center;padding:9px;border-radius:6px;font:800 11px Archivo,sans-serif;cursor:pointer;background:#c8102e;color:#fff;" onClick="{{ onClearRound }}">YES, CLEAR ROUND</div>
+                </div>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ !resetAllConfirmOpen }}" hint-placeholder-val="{{ true }}">
+              <div style="text-align:center;padding:11px;border-radius:10px;font:800 11px Archivo,sans-serif;color:#c8102e;border:1.5px solid #c8102e;cursor:pointer;margin-top:4px;" onClick="{{ onOpenResetAllConfirm }}">RESET ROSTER, COURSE &amp; SETTINGS</div>
+            </sc-if>
+            <sc-if value="{{ resetAllConfirmOpen }}" hint-placeholder-val="{{ false }}">
+              <div style="background:#fff;border-radius:10px;padding:14px;box-shadow:0 1px 2px rgba(15,42,74,.06);margin-top:4px;">
+                <div style="font:700 11px Archivo,sans-serif;color:#c8102e;line-height:1.5;margin-bottom:10px;">This clears the entire roster, resets the course to none, and puts every wager setting (games, junk, scoring mode, round type) back to default. This is more than clearing a round — sure?</div>
+                <div style="display:flex;gap:8px;">
+                  <div style="flex:1;text-align:center;padding:9px;border-radius:6px;font:800 11px Archivo,sans-serif;cursor:pointer;background:#f3f1ea;color:#5a6672;" onClick="{{ onDismissResetAllConfirm }}">CANCEL</div>
+                  <div style="flex:1;text-align:center;padding:9px;border-radius:6px;font:800 11px Archivo,sans-serif;cursor:pointer;background:#c8102e;color:#fff;" onClick="{{ onResetRosterAndSettings }}">YES, RESET</div>
+                </div>
+              </div>
+            </sc-if>
           </div>
         </sc-if>
       </div>
@@ -767,7 +814,7 @@ body{margin:0;background:#e5e2da;-webkit-font-smoothing:antialiased}
 
     <!-- ============ STROKE ALERT TOAST ============ -->
     <sc-if value="{{ showStrokeToast }}" hint-placeholder-val="{{ false }}">
-      <div style="position:absolute;inset:0;background:rgba(15,42,74,.45);display:flex;align-items:center;justify-content:center;z-index:20;padding:24px;">
+      <div style="position:fixed;inset:0;background:rgba(15,42,74,.45);display:flex;align-items:center;justify-content:center;z-index:20;padding:24px;">
       <div style="background:#0f2a4a;border:1.5px solid #d4a017;border-radius:12px;padding:16px 18px;box-shadow:0 12px 30px rgba(0,0,0,.3);width:100%;max-width:340px;animation:mb-pop .2s ease-out;">
         <div style="font:800 11px Archivo,sans-serif;color:#d4a017;letter-spacing:.6px;">STROKES ON #{{ strokeToast.hole }}</div>
         <div style="font:700 14px Archivo,sans-serif;color:#fff;margin-top:4px;">{{ strokeToast.names }}</div>
@@ -815,7 +862,7 @@ body{margin:0;background:#e5e2da;-webkit-font-smoothing:antialiased}
 
     <!-- ============ SWEEP CELEBRATION ============ -->
     <sc-if value="{{ showSweep }}" hint-placeholder-val="{{ false }}">
-      <div style="position:absolute;inset:0;background:#0f2a4a;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:30;padding:32px;text-align:center;animation:mb-pop .3s ease-out;">
+      <div style="position:fixed;inset:0;background:#0f2a4a;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:30;padding:32px;text-align:center;animation:mb-pop .3s ease-out;">
         <div style="font:800 12px Archivo,sans-serif;color:#d4a017;letter-spacing:2px;">GREENIE SWEEP</div>
         <div style="font:900 44px 'Archivo Black',sans-serif;color:#fff;margin:14px 0 8px;">{{ sweepToast.name }}</div>
         <div style="font:700 16px Georgia,serif;color:#a9bdd4;">{{ sweepToast.line }}</div>
@@ -825,7 +872,7 @@ body{margin:0;background:#e5e2da;-webkit-font-smoothing:antialiased}
 
     <!-- ============ SWEEP STILL ALIVE ============ -->
     <sc-if value="{{ showSweepAlive }}" hint-placeholder-val="{{ false }}">
-      <div style="position:absolute;inset:0;background:rgba(15,42,74,.35);display:flex;align-items:center;justify-content:center;z-index:20;padding:24px;">
+      <div style="position:fixed;inset:0;background:rgba(15,42,74,.35);display:flex;align-items:center;justify-content:center;z-index:20;padding:24px;">
       <div style="background:#fff8e6;border:1.5px solid #d4a017;border-radius:12px;padding:16px 18px;box-shadow:0 12px 30px rgba(0,0,0,.3);width:100%;max-width:340px;animation:mb-pop .2s ease-out;">
         <div style="font:800 11px Archivo,sans-serif;color:#a4750f;letter-spacing:.6px;">GREENIE SWEEPS ARE STILL IN EFFECT</div>
         <div style="font:700 14px Archivo,sans-serif;color:#0f2a4a;margin-top:4px;">{{ sweepAliveToast.name }} — {{ sweepAliveToast.line }}</div>
@@ -837,7 +884,7 @@ body{margin:0;background:#e5e2da;-webkit-font-smoothing:antialiased}
 
     <!-- ============ SWEEP DEAD ============ -->
     <sc-if value="{{ showSweepDead }}" hint-placeholder-val="{{ false }}">
-      <div style="position:absolute;inset:0;background:rgba(15,42,74,.45);display:flex;align-items:center;justify-content:center;z-index:20;padding:24px;">
+      <div style="position:fixed;inset:0;background:rgba(15,42,74,.45);display:flex;align-items:center;justify-content:center;z-index:20;padding:24px;">
       <div style="background:#0f2a4a;border:1.5px solid #c8102e;border-radius:12px;padding:16px 18px;box-shadow:0 12px 30px rgba(0,0,0,.3);width:100%;max-width:340px;animation:mb-pop .2s ease-out;">
         <div style="font:800 11px Archivo,sans-serif;color:#ff8a7a;letter-spacing:.6px;">GREENIE SWEEPS ARE DEAD</div>
         <div style="font:700 14px Archivo,sans-serif;color:#fff;margin-top:4px;">{{ sweepDeadToast.line }}</div>
@@ -963,6 +1010,8 @@ class Component extends DCLogic {
     newSitePasswordInput: '',
     newSitePasswordSaved: false,
     clearDataConfirmOpen: false,
+    clearRoundConfirmOpen: false,
+    resetAllConfirmOpen: false,
     screen: 'board',
     scoringMode: 'low',
     currentHole: 15,
@@ -1019,7 +1068,12 @@ class Component extends DCLogic {
   onPwSubmit(){
     if (this.state.pwInput === getSitePassword()){
       if (typeof localStorage !== 'undefined') localStorage.setItem(UNLOCK_STORAGE_KEY, '1');
-      this.setState({unlocked:true, pwInput:'', pwError:false});
+      this.setState({unlocked:true, pwInput:'', pwError:false}, () => {
+        // The lock screen can grow taller than the viewport (e.g. "Forgot password?"
+        // expanded), leaving the page scrolled down. The app underneath is shorter,
+        // so without this the header banner stays scrolled out of view after unlock.
+        if (typeof window !== 'undefined') window.scrollTo(0, 0);
+      });
     } else {
       this.setState({pwError:true});
     }
@@ -1042,15 +1096,57 @@ class Component extends DCLogic {
     if (typeof localStorage !== 'undefined') localStorage.setItem(SITE_PASSWORD_STORAGE_KEY, val);
     this.setState({newSitePasswordSaved:true, newSitePasswordInput:''});
   }
+  logout(){
+    if (typeof localStorage !== 'undefined') localStorage.removeItem(UNLOCK_STORAGE_KEY);
+    this.setState({unlocked:false, pwInput:'', pwError:false});
+  }
   onGroupKeyInputChange(e){ this.setState({groupKeyInput: e.target.value}); }
   joinGroupKey(){
     const val = this.state.groupKeyInput.trim();
     if (!val || val === this.state.groupKey) { this.setState({groupKeyInput:''}); return; }
     if (typeof localStorage !== 'undefined') localStorage.setItem(GROUP_KEY_STORAGE, val);
-    this.setState({groupKey: val, groupKeyInput:''}, () => this.loadState(true));
+    this.setState({groupKey: val, groupKeyInput:''}, () => {
+      this.loadState(true);
+      // Retry shortly after in case the host's data was still in flight when we joined.
+      setTimeout(() => this.loadState(true), 2500);
+    });
   }
   openClearDataConfirm(){ this.setState({clearDataConfirmOpen:true}); }
   dismissClearDataConfirm(){ this.setState({clearDataConfirmOpen:false}); }
+  openClearRoundConfirm(){ this.setState({clearRoundConfirmOpen:true}); }
+  dismissClearRoundConfirm(){ this.setState({clearRoundConfirmOpen:false}); }
+  // Wipes the round in progress — scores, every game/junk record (RRC, sandies,
+  // greenie sweep, presses, Vegas teams, etc.) — but keeps the roster, course,
+  // scoring mode, and wager settings exactly as configured, so you can tee off
+  // again without resetting your whole setup.
+  clearRound(){
+    this.setState({
+      scores: {}, greenieWinners: {}, greenieResolved: {}, wolfPicks: {},
+      sandyFlags: {}, polyFlags: {}, barkyFlags: {}, chippyFlags: {}, vegasTeams: {},
+      presses: [], currentHole: 1, screen: 'board',
+      rrcHolder: null, sweepCandidate: null, sweepCount: 0, sweepDead: false,
+      activeNotif: null, clearRoundConfirmOpen: false
+    });
+  }
+  openResetAllConfirm(){ this.setState({resetAllConfirmOpen:true}); }
+  dismissResetAllConfirm(){ this.setState({resetAllConfirmOpen:false}); }
+  // Distinct from "Clear Round" (which keeps roster/course/settings) and from the
+  // master-password data wipe (which nukes local storage too). This resets the
+  // roster, course, and every wager setting back to app defaults, but keeps the
+  // device unlocked/logged-in and the session code as-is, so it's a normal
+  // Settings-tab action rather than a locked-down admin one.
+  resetRosterAndSettings(){
+    this.setState({
+      roster: [], scores: {}, greenieWinners: {}, greenieResolved: {}, wolfPicks: {},
+      sandyFlags: {}, polyFlags: {}, barkyFlags: {}, chippyFlags: {}, vegasTeams: {},
+      presses: [], currentHole: 1, screen: 'board',
+      rrcHolder: null, sweepCandidate: null, sweepCount: 0, sweepDead: false, activeNotif: null,
+      games: JSON.parse(JSON.stringify(GAMES_DEFAULT)), junk: JSON.parse(JSON.stringify(JUNK_DEFAULT)),
+      courseName: 'No Course Selected', liveCourses: {},
+      roundType: '18', tournamentDays: 2, eventName: '',
+      scoringMode: 'low', showHero: true, resetAllConfirmOpen: false
+    });
+  }
   clearAllSavedData(){
     if (typeof localStorage !== 'undefined'){
       localStorage.removeItem(LOCAL_STATE_KEY);
@@ -1070,6 +1166,7 @@ class Component extends DCLogic {
 
   // ── Live sync stubs — see USE_LIVE_SYNC block above ──
   componentDidMount(){
+    if (typeof window !== 'undefined') window.scrollTo(0, 0);
     try {
       const saved = JSON.parse(localStorage.getItem('hustle_known_players') || '[]');
       if (Array.isArray(saved)) this.setState({knownPlayers: saved});
@@ -1093,10 +1190,16 @@ class Component extends DCLogic {
     this._localSaveTimer = setTimeout(() => {
       try { localStorage.setItem(LOCAL_STATE_KEY, JSON.stringify(this.state)); } catch(e){}
     }, 300);
-    // Skip marking "local change" bookkeeping when this update IS a remote poll
-    // landing (avoids a feedback loop); otherwise remember when we last changed
-    // something locally so the poll below can hold off overwriting it.
-    if (!this._applyingRemote) this._lastLocalChangeAt = Date.now();
+    // Only count it as a "local change" (for the stale-poll guard below) if a
+    // field that actually SYNCS changed — not just any UI interaction (typing in
+    // a search box, switching tabs, opening a panel). Otherwise a device that has
+    // done nothing but browse the app would permanently refuse a teammate's
+    // roster/scores, because its own "last change" timestamp always looks newer
+    // than the shared data ever could. This was why joining a session code showed
+    // no data: any local interaction quietly blocked every future sync forever.
+    const curSyncSnap = JSON.stringify(pickSyncFields(this.state));
+    if (!this._applyingRemote && curSyncSnap !== this._lastSyncSnap) this._lastLocalChangeAt = Date.now();
+    this._lastSyncSnap = curSyncSnap;
     this.pushStateDebounced();
   }
   pushStateDebounced(){
@@ -1135,7 +1238,10 @@ class Component extends DCLogic {
     if (!USE_LIVE_SYNC || !SYNC_ENDPOINT) return;
     const attemptedAt = Date.now();
     try {
-      const res = await fetch(SYNC_ENDPOINT, {
+      // Group is sent BOTH in the URL and the body — the feed's write endpoint
+      // resolves it from either, but sending both means a write and a read always
+      // agree on which row they mean, however the endpoint is deployed.
+      const res = await fetch(`${SYNC_ENDPOINT}?group=${encodeURIComponent(this.state.groupKey)}`, {
         method: 'POST',
         headers: {'Content-Type':'application/json'},
         body: JSON.stringify({
@@ -1631,7 +1737,7 @@ class Component extends DCLogic {
             const others = active.filter(o => o.id !== p.id);
             ledger[p.id] += val * others.length;
             others.forEach(o => { ledger[o.id] -= val; });
-            lines.push(`POLY #${h}: ${p.name} collects $${val} each from every other player`);
+            lines.push(`POLIE #${h}: ${p.name} collects $${val} each from every other player`);
           });
         }
       }
@@ -2257,6 +2363,15 @@ class Component extends DCLogic {
       onOpenClearDataConfirm: () => this.openClearDataConfirm(),
       onDismissClearDataConfirm: () => this.dismissClearDataConfirm(),
       onClearAllSavedData: () => this.clearAllSavedData(),
+      clearRoundConfirmOpen: s.clearRoundConfirmOpen,
+      onOpenClearRoundConfirm: () => this.openClearRoundConfirm(),
+      onDismissClearRoundConfirm: () => this.dismissClearRoundConfirm(),
+      onClearRound: () => this.clearRound(),
+      resetAllConfirmOpen: s.resetAllConfirmOpen,
+      onOpenResetAllConfirm: () => this.openResetAllConfirm(),
+      onDismissResetAllConfirm: () => this.dismissResetAllConfirm(),
+      onResetRosterAndSettings: () => this.resetRosterAndSettings(),
+      onLogout: () => this.logout(),
       groupKey: s.groupKey, groupKeyInput: s.groupKeyInput,
       onGroupKeyInputChange: (e)=>this.onGroupKeyInputChange(e), onJoinGroupKey: () => this.joinGroupKey(),
       syncError: s.syncError,
