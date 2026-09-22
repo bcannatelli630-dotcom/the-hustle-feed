@@ -24,11 +24,19 @@ async function searchGolfCourseAPI(q) {
 }
 
 function normalize(c) {
-  const holes = (c.tees && c.tees.male && c.tees.male[0] && c.tees.male[0].holes)
-    || (c.tees && c.tees.female && c.tees.female[0] && c.tees.female[0].holes) || [];
+  const maleTees = (c.tees && c.tees.male) || null;
+  const femaleTees = (c.tees && c.tees.female) || null;
+  const teeSource = maleTees || femaleTees || [];
+  // GolfCourseAPI has returned this as either an array of tee objects or an
+  // object keyed by tee name across different course records — handle both so
+  // one shape doesn't crash the whole search.
+  const teeList = Array.isArray(teeSource) ? teeSource : Object.values(teeSource);
+  const holes = (teeList[0] && teeList[0].holes) || [];
   const tees = {};
-  const teeList = (c.tees && (c.tees.male || c.tees.female)) || [];
-  teeList.forEach(t => { tees[t.tee_name] = { rating: t.course_rating, slope: t.slope_rating }; });
+  teeList.forEach(t => {
+    const teeName = t.tee_name || t.name || 'Tee';
+    tees[teeName] = { rating: t.course_rating, slope: t.slope_rating };
+  });
   return {
     name: `${c.club_name}${c.course_name ? ' — ' + c.course_name : ''}`,
     par: holes.map(h => h.par),
