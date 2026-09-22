@@ -11,7 +11,15 @@ async function searchGolfCourseAPI(q) {
   const resp = await fetch(`${BASE}/v1/search?search_query=${encodeURIComponent(q)}`, {
     headers: { Authorization: `Key ${KEY}` }
   });
-  const json = await resp.json();
+  const text = await resp.text();
+  if (!resp.ok) {
+    // Surface GolfCourseAPI's own status/body instead of blindly calling .json()
+    // on what might be an HTML error page or empty body (that throw was what
+    // turned an ordinary "bad key" / rate-limit response into an opaque 502).
+    throw new Error(`golfcourseapi_${resp.status}: ${text.slice(0, 200)}`);
+  }
+  let json;
+  try { json = JSON.parse(text); } catch (e) { throw new Error(`golfcourseapi_bad_json: ${text.slice(0, 200)}`); }
   return json.courses || [];
 }
 
@@ -56,7 +64,8 @@ export default async function handler(req, res) {
     res.setHeader('Cache-Control', 's-maxage=3600, stale-while-revalidate=600');
     res.status(200).json({ courses });
   } catch (e) {
-    res.status(502).json({ error: 'course_lookup_failed' });
+    console.error('course_lookup_failed:', e.message);
+    res.status(502).json({ error: 'course_lookup_failed', detail: e.message });
   }
 }
 
