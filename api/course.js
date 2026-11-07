@@ -23,18 +23,33 @@ async function searchGolfCourseAPI(q) {
   return json.courses || [];
 }
 
+// Search results are sometimes summary records with no tees/holes. The full
+// record (tees, par, stroke index) only comes back from /v1/courses/{id}.
+async function fetchCourseDetail(id) {
+  const resp = await fetch(`${BASE}/v1/courses/${id}`, { headers: { Authorization: `Key ${KEY}` } });
+  if (!resp.ok) return null;
+  try { const j = await resp.json(); return j.course || j; } catch (e) { return null; }
+}
+
+function teeListOf(c) {
+  const toList = s => !s ? [] : (Array.isArray(s) ? s : Object.values(s));
+  // Male tees first, then female, so every tee the course has is selectable.
+  return [...toList(c.tees && c.tees.male), ...toList(c.tees && c.tees.female)];
+}
+
+function hasHoleData(c) {
+  return teeListOf(c).some(t => Array.isArray(t.holes) && t.holes.length >= 9);
+}
+
 function normalize(c) {
-  const maleTees = (c.tees && c.tees.male) || null;
-  const femaleTees = (c.tees && c.tees.female) || null;
-  const teeSource = maleTees || femaleTees || [];
-  // GolfCourseAPI has returned this as either an array of tee objects or an
-  // object keyed by tee name across different course records — handle both so
-  // one shape doesn't crash the whole search.
-  const teeList = Array.isArray(teeSource) ? teeSource : Object.values(teeSource);
-  const holes = (teeList[0] && teeList[0].holes) || [];
+  const teeList = teeListOf(c);
+  // Use the first tee that actually carries hole-by-hole data, not just the first tee.
+  const holeTee = teeList.find(t => Array.isArray(t.holes) && t.holes.length >= 9) || teeList[0] || {};
+  const holes = holeTee.holes || [];
   const tees = {};
   teeList.forEach(t => {
     const teeName = t.tee_name || t.name || 'Tee';
+    if (tees[teeName]) return; // male + female sets can share names; keep the first
     tees[teeName] = { rating: t.course_rating, slope: t.slope_rating };
   });
   return {
@@ -68,7 +83,14 @@ export default async function handler(req, res) {
       if (firstWord.length >= 3) raw = await searchGolfCourseAPI(firstWord);
     }
 
-    const courses = raw.slice(0, 8).map(normalize);
+    const top = raw.slice(0, 8);
+    // Fill in any summary-only results with the full course record.
+    const full = await Promise.all(top.map(async c => {
+      if (hasHoleData(c) || !c.id) return c;
+      const d = await fetchCourseDetail(c.id);
+      return d && hasHoleData(d) ? d : c;
+    }));
+    const courses = full.map(normalize);
     res.setHeader('Cache-Control', 's-maxage=3600, stale-while-revalidate=600');
     res.status(200).json({ courses });
   } catch (e) {
