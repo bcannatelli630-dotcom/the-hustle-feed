@@ -52,8 +52,16 @@ function normalize(c) {
     if (tees[teeName]) return; // male + female sets can share names; keep the first
     tees[teeName] = { rating: t.course_rating, slope: t.slope_rating };
   });
+  const loc = c.location || {};
+  const location = [loc.city, loc.state].filter(Boolean).join(', ');
+  // Same-named clubs exist in different cities (e.g. San Jose Country Club in
+  // San Jose, CA and Jacksonville, FL), so the location is part of the name.
+  const sameName = !c.course_name || c.course_name.trim().toLowerCase() === (c.club_name || '').trim().toLowerCase();
+  const base = `${c.club_name}${sameName ? '' : ' — ' + c.course_name}`;
   return {
-    name: `${c.club_name}${c.course_name ? ' — ' + c.course_name : ''}`,
+    id: c.id,
+    location,
+    name: location ? `${base} (${location})` : base,
     par: holes.map(h => h.par),
     si: holes.map(h => h.handicap),
     tees
