@@ -80,7 +80,10 @@ function detail(c) {
   teeList.forEach(t => {
     const teeName = t.tee_name || t.name || 'Tee';
     if (tees[teeName]) return;
-    tees[teeName] = { rating: t.course_rating, slope: t.slope_rating };
+    // Yardage comes in the same response as rating/slope, so keeping it costs no extra request.
+    const holeYards = Array.isArray(t.holes) ? t.holes.reduce((a, h) => a + (h.yardage || 0), 0) : 0;
+    const yards = t.total_yards || holeYards || null;
+    tees[teeName] = { rating: t.course_rating, slope: t.slope_rating, yards };
   });
   return { ...summary(c), par: holes.map(h => h.par), si: holes.map(h => h.handicap), tees };
 }
