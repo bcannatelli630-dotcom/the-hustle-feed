@@ -21,11 +21,14 @@ function sb() {
   if (!_sb) _sb = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
   return _sb;
 }
-async function cacheGet(key) {
+// maxAgeMs: searches are re-checked after 30 days; course details never expire.
+async function cacheGet(key, maxAgeMs) {
   const client = sb(); if (!client) return null;
   try {
     const { data } = await client.from('hustle_state').select('payload').eq('group_key', key).maybeSingle();
-    return data && data.payload && data.payload.cached ? data.payload.cached : null;
+    if (!data || !data.payload || !data.payload.cached) return null;
+    if (maxAgeMs && Date.now() - (data.payload.t || 0) > maxAgeMs) return null;
+    return data.payload.cached;
   } catch (e) { return null; }
 }
 async function cachePut(key, value) {
@@ -109,8 +112,8 @@ export default async function handler(req, res) {
     if (!q) { res.status(400).json({ error: 'missing_query' }); return; }
 
     const skey = `search:${q.toLowerCase()}`;
-    const cachedSearch = await cacheGet(skey);
-    if (cachedSearch) {
+    const cachedSearch = await cacheGet(skey, 30 * 24 * 3600 * 1000);
+    if (cachedSearch && cachedSearch.length) {
       res.setHeader('Cache-Control', 's-maxage=86400, stale-while-revalidate=86400');
       res.status(200).json({ courses: cachedSearch });
       return;
@@ -130,7 +133,9 @@ export default async function handler(req, res) {
     const seen = new Set();
     const courses = raw.filter(c => c && !seen.has(c.id) && seen.add(c.id)).slice(0, 40).map(summary);
     if (courses.length) await cachePut(skey, courses);
-    res.setHeader('Cache-Control', 's-maxage=86400, stale-while-revalidate=86400');
+    // Never let Vercel hold on to an empty answer: if GolfCourseAPI had a bad
+    // moment, the next search must ask again instead of repeating "no results" all day.
+    res.setHeader('Cache-Control', courses.length ? 's-maxage=86400, stale-while-revalidate=86400' : 'no-store');
     res.status(200).json({ courses });
   } catch (e) {
     res.setHeader('Cache-Control', 'no-store');
